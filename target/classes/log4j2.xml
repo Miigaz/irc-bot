@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Properties>
+        <Property name="baseDir">logs</Property>
+        <Property name="serviceName">app</Property>
+        <Property name="appName">app</Property>
+        <Property name="env">PROD</Property>
+    </Properties>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </Console>
+        <RollingFile name="RollingFile" fileName="${baseDir}/${serviceName}.log"
+                     filePattern="${baseDir}/${dollar}{date:yyyy-MM}/${serviceName}-%d{yyyy-MM-dd}.log.gz">
+            <PatternLayout>
+                <Pattern>%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+                <SizeBasedTriggeringPolicy size="250 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="30">
+                <Delete basePath="${baseDir}" maxDepth="2">
+                    <IfFileName glob="*/${serviceName}-*.log.gz"/>
+                    <IfLastModified age="P40D"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+        <Gelf name="Gelf" host="udp:10.21.60.237" port="12209" version="1.1" extractStackTrace="true"
+              filterStackTrace="true" mdcProfiling="true" includeFullMdc="true" maximumMessageSize="8192"
+              originHost="%host{fqdn}"
+              additionalFieldTypes="environment=${env},application=${appName},service=${serviceName}">
+            <!--                <Field name="timestamp" pattern="%d{dd MMM yyyy HH:mm:ss,SSS}" />-->
+            <!--                <Field name="level" pattern="%level" />-->
+            <!--                <Field name="simpleClassName" pattern="%C{1}" />-->
+            <!--                <Field name="className" pattern="%C" />-->
+            <!--                <Field name="server" pattern="%host" />-->
+            <!--                <Field name="server.fqdn" pattern="%host{fqdn}" />-->
+
+            <!--                &lt;!&ndash; This is a static field &ndash;&gt;-->
+            <!--                <Field name="fieldName2" literal="fieldValue2" />-->
+
+            <!--                &lt;!&ndash; This is a field using MDC &ndash;&gt;-->
+            <!--                <Field name="mdcField2" mdc="mdcField2" />-->
+            <!--                <DynamicMdcFields regex="mdc.*" />-->
+            <!--                <DynamicMdcFields regex="(mdc|MDC)fields" />-->
+            <!--                <DynamicMdcFieldType regex="my_field.*" type="String" />-->
+        </Gelf>
+    </Appenders>
+    <Loggers>
+        <Root level="debug">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="RollingFile"/>
+            <AppenderRef ref="Gelf" level="info"/>
+        </Root>
+    </Loggers>
+</Configuration>

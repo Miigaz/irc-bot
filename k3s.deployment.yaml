@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${service.name}
+  labels:
+    app: ${service.name}
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ${service.name}
+  template:
+    metadata:
+      labels:
+        app: ${service.name}
+    spec:
+      containers:
+      - name: ${project.artifactId}
+        image: scm.corp.unitel.mn:5443/unitel/${project.artifactId}:${project.version}
+        resources:
+          limits:
+            cpu: "1"
+            memory: 1Gi
+        imagePullPolicy: "Always"
+        ports:
+        - containerPort: 8080
+#        volumeMounts:
+#        - mountPath: /deployments/log
+#          name: logdir
+      imagePullSecrets:
+        - name: regcred
+#      volumes:
+#        - name: logdir
+#          hostPath:
+#            path: /var/log/${service.name}
+#            type: Directory
+      
